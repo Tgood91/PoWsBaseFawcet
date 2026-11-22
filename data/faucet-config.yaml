@@ -1,4 +1,4 @@
-# PoWFaucet config for Base Sepolia (chain 84532). Based on PoWFaucet v2.6.0's faucet-config.example.yaml;
+# PoWFaucet config for Base (chain 84532). Based on PoWFaucet v2.6.0's faucet-config.example.yaml;
 # see that file for every option: https://github.com/pk910/PoWFaucet/blob/v2.6.0/faucet-config.example.yaml
 #
 # NO SECRETS IN THIS FILE. The wallet key and faucet secret come from environment variables
@@ -19,46 +19,47 @@ serverPort: 8080
 # Set to 1 if you put Caddy/nginx/Cloudflare in front, or every visitor shares one IP and the IP limits break.
 httpProxyCount: 3   # Render: Cloudflare edge + 2 Render-internal hops (1 gave 10.x, 2 gave a Cloudflare IP)
 
-faucetTitle: "Base Sepolia PoW Faucet"
+faucetTitle: "Runes PoW Faucet"
 faucetImage: "/images/fauceth_420.jpg"
 faucetHomeHtml: |
   <div class='pow-info'>
     <h5>What is this?</h5>
-    A faucet for <b>Base Sepolia</b> testnet ETH (chain 84532). Testnet ETH has no value.<br>
+    A faucet for <b>Runes</b>, an ERC-20 token on <b>Base</b> mainnet (chain 8453).<br>
     To stop bots draining it, you do a little proof-of-work mining in your browser in exchange for funds.
-    Mining does not create ETH; it only slows down mass requests.
+    Mining does not create Runes; it only slows down mass requests.
   </div>
   <div class='pow-info'>
     <h5>How does it work?</h5>
-    Enter your Base Sepolia address and start mining. When you've collected enough, stop and claim.
+    Enter your Base address and start mining. When you've collected enough, stop and claim.
   </div>
   <div class='pow-info'>
     <h5>Help the faucet</h5>
-    Send Base Sepolia ETH you no longer need to:<br>{faucetWallet}
+    Send Runes (or a little Base ETH for gas) to:<br>{faucetWallet}
   </div>
 
 # --- chain ---
-ethRpcHost: "https://sepolia.base.org"   # public and rate-limited; use your own RPC (Alchemy, QuickNode, ...) for real traffic
+ethRpcHost: "https://mainnet.base.org"   # public, rate-limited backup; on Render, render-start.sh adds Alchemy (ALCHEMY_RPC_URL) as primary
 ethRpcMaxBlockHeightDiff: 10
 ethRpcMonitorInterval: 10
 ethRpcMonitorMeteredInterval: 60
 ethTxBroadcastCount: 2
-ethChainId: 84532
-faucetCoinSymbol: "ETH"
-faucetCoinType: "native"
+ethChainId: 8453   # Base mainnet
+faucetCoinSymbol: "Runes"
+faucetCoinType: "erc20"
+faucetCoinContract: "0x68E63f682AB383A9132317349125fF7618C96e01"   # Runes, 18 decimals, on Base mainnet
 # 100k rather than 21k so smart-contract wallets (common on Base) can receive; unused gas is not charged.
 ethTxGasLimit: 100000
 ethLegacyTx: false
-ethTxMaxFee: 2000000000          # 2 gwei max fee (Base Sepolia normally costs a tiny fraction of this)
+ethTxMaxFee: 50000000              # 0.05 gwei max fee (Base mainnet is ~0.006 gwei); gas reserve per tx = 100k gas x this = 0.000005 ETH
 ethTxPrioFee: 1000000            # 0.001 gwei tip
-ethTxFeeCap: 10000000000000000   # never pay more than 0.01 ETH in fees for one claim
+ethTxFeeCap: 1000000000000000      # never pay more than 0.001 ETH in fees for one claim
 ethMaxPending: 12
 ethQueueNoFunds: true
-ethTxExplorerLink: "https://sepolia.basescan.org/tx/{txid}"
+ethTxExplorerLink: "https://basescan.org/tx/{txid}"
 
 # --- drops ---
-maxDropAmount: 250000000000000000  # 0.25 ETH per claim at most
-minDropAmount: 25000000000000000   # 0.025 ETH: a claim needs at least this much mined
+maxDropAmount: 250000000000000000000000  # 250,000 Runes per claim at most
+minDropAmount: 100000000000000000000000  # 100,000 Runes: a claim needs at least this much mined
 
 sessionTimeout: 43200    # 12h
 sessionCleanup: 2592000  # 30 days
@@ -87,10 +88,10 @@ modules:
       hosting: 10
       proxy: 10
 
-  # Refuse addresses that already hold plenty of Base Sepolia ETH. Contracts allowed (smart wallets).
+  # Refuse addresses that already hold plenty of Base ETH. Contracts allowed (smart wallets).
   ethinfo:
     enabled: true
-    maxBalance: 1000000000000000000  # 1 ETH
+    maxBalance: 1000000000000000000000000  # refuse addresses already holding 1,000,000+ Runes
     denyContract: false
 
   # Shrink rewards as the faucet wallet runs low. Value = % of normal reward kept; lowest applies.
@@ -98,25 +99,25 @@ modules:
   faucet-balance:
     enabled: true
     fixedRestriction:
-      500000000000000000: 50    # 50% below 0.5 ETH
+      1000000000000000000000000: 50    # 50% rewards below 1,000,000 Runes left
 
   # Hard daily budget: at most ~1 ETH a day leaves the faucet, however many people mine.
   faucet-outflow:
     enabled: true
-    amount: 1000000000000000000        # 1 ETH
+    amount: 500000000000000000000000   # 500,000 Runes
     duration: 86400                    # per day
-    lowerLimit: -500000000000000000    # -0.5 ETH: rewards fall to 0%
-    upperLimit: 500000000000000000     # 0.5 ETH buffer for spikes
+    lowerLimit: -250000000000000000000000   # -250,000 Runes: rewards fall to 0%
+    upperLimit: 250000000000000000000000    # 250,000 Runes buffer for spikes
 
   # Per IP and per address.
   recurring-limits:
     enabled: true
     limits:
-      - limitCount: 2
-        limitAmount: 250000000000000000  # 0.25 ETH (one full claim) per IP / address per day
+      - limitCount: 1
+        limitAmount: 250000000000000000000000  # 250,000 Runes (one full claim) per IP / address per day
         duration: 86400
-      - limitCount: 4
-        limitAmount: 500000000000000000  # 0.5 ETH per address per week
+      - limitCount: 3
+        limitAmount: 500000000000000000000000  # 500,000 Runes per address per week
         duration: 604800
         byAddrOnly: true
 
@@ -128,7 +129,7 @@ modules:
 
   pow:
     enabled: true
-    powShareReward: 400000000000000  # 0.0004 ETH/share. Difficulty 11 = ~2048 argon2 hashes/share. ~200 H/s browser: min claim ~10 min, max ~100 min; at the 500 H/s cap: ~4 / ~40 min
+    powShareReward: 1000000000000000000000  # 1,000 Runes/share (~2048 argon2 hashes). ~200 H/s: min claim ~17 min, max ~43 min; at the 500 H/s cap: ~7 / ~17 min
     verifyMinerMissPenaltyPerc: 10
     verifyMinerRewardPerc: 15
     powSessionTimeout: 18000         # 5h
@@ -139,15 +140,15 @@ modules:
     powHashAlgo: "argon2"
 
 # --- faucet wallet levels ---
-spareFundsAmount: 10000000000000000    # keep 0.01 ETH for fees
-noFundsBalance: 270000000000000000     # below 0.27 ETH: "out of funds" (one full 0.25 claim plus fees must fit)
-lowFundsBalance: 500000000000000000    # below 0.5 ETH: show the low-funds warning
+spareFundsAmount: 0                     # token faucet: gas is paid in ETH, checked separately
+noFundsBalance: 250000000000000000000000   # below 250,000 Runes: "out of funds" (a full claim must fit)
+lowFundsBalance: 1000000000000000000000000  # below 1,000,000 Runes: low-funds warning
 lowFundsWarning: "The faucet is running low! Faucet balance: {1}"
 noFundsError: "Sorry, the faucet is out of funds :("
-rpcConnectionError: "The faucet can't reach Base Sepolia right now (RPC error)"
+rpcConnectionError: "The faucet can't reach Base right now (RPC error)"
 
 faucetStats:
   logfile: "faucet-stats.log"
 buildSeoIndex: true
 buildSeoMeta:
-  keywords: "base sepolia,faucet,base,testnet,eth,pow"
+  keywords: "runes,faucet,base,erc20,pow"
