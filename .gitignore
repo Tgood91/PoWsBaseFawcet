@@ -1,0 +1,7 @@
+.env
+data/*.db
+data/*.db-*
+data/*.log
+data/faucet-pid.txt
+data/modules-cache/
+data/passport-cache/

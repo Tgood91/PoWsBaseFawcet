@@ -1,0 +1,11 @@
+# Base Sepolia PoW faucet. Runs PoWFaucet's official image (pinned) with our config.
+# Start: cp .env.example .env, fill it in on the server, then: docker compose up -d
+services:
+  faucet:
+    image: pk910/powfaucet:v2.6.0   # pinned upstream release; change deliberately when upgrading
+    restart: unless-stopped
+    env_file: .env                  # FAUCET_ETH_WALLET_KEY, FAUCET_SECRET (never commit .env)
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data                # faucet-config.yaml in; database, logs and stats out

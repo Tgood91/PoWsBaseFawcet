@@ -1,0 +1,153 @@
+# PoWFaucet config for Base Sepolia (chain 84532). Based on PoWFaucet v2.6.0's faucet-config.example.yaml;
+# see that file for every option: https://github.com/pk910/PoWFaucet/blob/v2.6.0/faucet-config.example.yaml
+#
+# NO SECRETS IN THIS FILE. The wallet key and faucet secret come from environment variables
+# (FAUCET_ETH_WALLET_KEY, FAUCET_SECRET, and FAUCET_CAPTCHA_SECRET if captcha is on), set in .env on the server.
+# Amounts are in wei (1 ETH = 1000000000000000000).
+# Faucet wallet: the burner 0x4342bBb4FA142f2D5E7Fd02e7cFAc9FaF19B9BdE (its key goes in .env on the server).
+# Sized for a small wallet (about 1 ETH): it stops before a full claim can no longer be paid.
+version: 2
+
+database:
+  driver: "sqlite"
+  file: "faucet-store.db"
+
+faucetLogFile: "faucet-events.log"
+faucetPidFile: "faucet-pid.txt"
+serverPort: 8080
+# Number of reverse proxies IN FRONT OF the container (the image's own nginx is accounted for already).
+# Set to 1 if you put Caddy/nginx/Cloudflare in front, or every visitor shares one IP and the IP limits break.
+httpProxyCount: 0
+
+faucetTitle: "Base Sepolia PoW Faucet"
+faucetImage: "/images/fauceth_420.jpg"
+faucetHomeHtml: |
+  <div class='pow-info'>
+    <h5>What is this?</h5>
+    A faucet for <b>Base Sepolia</b> testnet ETH (chain 84532). Testnet ETH has no value.<br>
+    To stop bots draining it, you do a little proof-of-work mining in your browser in exchange for funds.
+    Mining does not create ETH; it only slows down mass requests.
+  </div>
+  <div class='pow-info'>
+    <h5>How does it work?</h5>
+    Enter your Base Sepolia address and start mining. When you've collected enough, stop and claim.
+  </div>
+  <div class='pow-info'>
+    <h5>Help the faucet</h5>
+    Send Base Sepolia ETH you no longer need to:<br>{faucetWallet}
+  </div>
+
+# --- chain ---
+ethRpcHost: "https://sepolia.base.org"   # public and rate-limited; use your own RPC (Alchemy, QuickNode, ...) for real traffic
+ethRpcMaxBlockHeightDiff: 10
+ethRpcMonitorInterval: 10
+ethRpcMonitorMeteredInterval: 60
+ethTxBroadcastCount: 2
+ethChainId: 84532
+faucetCoinSymbol: "ETH"
+faucetCoinType: "native"
+# 100k rather than 21k so smart-contract wallets (common on Base) can receive; unused gas is not charged.
+ethTxGasLimit: 100000
+ethLegacyTx: false
+ethTxMaxFee: 2000000000          # 2 gwei max fee (Base Sepolia normally costs a tiny fraction of this)
+ethTxPrioFee: 1000000            # 0.001 gwei tip
+ethTxFeeCap: 10000000000000000   # never pay more than 0.01 ETH in fees for one claim
+ethMaxPending: 12
+ethQueueNoFunds: true
+ethTxExplorerLink: "https://sepolia.basescan.org/tx/{txid}"
+
+# --- drops ---
+maxDropAmount: 250000000000000000  # 0.25 ETH per claim at most
+minDropAmount: 25000000000000000   # 0.025 ETH: a claim needs at least this much mined
+
+sessionTimeout: 43200    # 12h
+sessionCleanup: 2592000  # 30 days
+sessionSaveTime: 120
+
+modules:
+  # Strongly recommended once you have keys: sign up at https://hcaptcha.com, put the site key here and
+  # FAUCET_CAPTCHA_SECRET in .env, then set enabled: true. Off by default so the faucet starts without keys.
+  captcha:
+    enabled: false
+    provider: "hcaptcha"
+    siteKey: "00000000-0000-0000-0000-000000000000"
+    checkSessionStart: true
+    checkBalanceClaim: false
+
+  ensname:
+    enabled: false
+
+  # Cuts rewards for visitors on hosting providers / proxies (bot farms).
+  ipinfo:
+    enabled: true
+    apiUrl: "http://ip-api.com/json/{ip}?fields=21155839"
+    cacheTime: 86400
+    required: false
+    restrictions:
+      hosting: 10
+      proxy: 10
+
+  # Refuse addresses that already hold plenty of Base Sepolia ETH. Contracts allowed (smart wallets).
+  ethinfo:
+    enabled: true
+    maxBalance: 1000000000000000000  # 1 ETH
+    denyContract: false
+
+  # Shrink rewards as the faucet wallet runs low. Value = % of normal reward kept; lowest applies.
+  # Full rewards down to 0.5 ETH, half below that; noFundsBalance below stops it entirely.
+  faucet-balance:
+    enabled: true
+    fixedRestriction:
+      500000000000000000: 50    # 50% below 0.5 ETH
+
+  # Hard daily budget: at most ~1 ETH a day leaves the faucet, however many people mine.
+  faucet-outflow:
+    enabled: true
+    amount: 1000000000000000000        # 1 ETH
+    duration: 86400                    # per day
+    lowerLimit: -500000000000000000    # -0.5 ETH: rewards fall to 0%
+    upperLimit: 500000000000000000     # 0.5 ETH buffer for spikes
+
+  # Per IP and per address.
+  recurring-limits:
+    enabled: true
+    limits:
+      - limitCount: 2
+        limitAmount: 250000000000000000  # 0.25 ETH (one full claim) per IP / address per day
+        duration: 86400
+      - limitCount: 4
+        limitAmount: 500000000000000000  # 0.5 ETH per address per week
+        duration: 604800
+        byAddrOnly: true
+
+  concurrency-limit:
+    enabled: true
+    concurrencyLimit: 1
+    byAddrOnly: false
+    byIPOnly: false
+
+  pow:
+    enabled: true
+    powShareReward: 1000000000000000 # 0.001 ETH per share: 25 shares for the minimum, 250 for the cap. Tune after watching real hashrates
+    verifyMinerMissPenaltyPerc: 10
+    verifyMinerRewardPerc: 15
+    powSessionTimeout: 18000         # 5h
+    powIdleTimeout: 1800             # 30min
+    powHashrateSoftLimit: 1000
+    powHashrateHardLimit: 1100
+    powDifficulty: 11
+    powHashAlgo: "argon2"
+
+# --- faucet wallet levels ---
+spareFundsAmount: 10000000000000000    # keep 0.01 ETH for fees
+noFundsBalance: 270000000000000000     # below 0.27 ETH: "out of funds" (one full 0.25 claim plus fees must fit)
+lowFundsBalance: 500000000000000000    # below 0.5 ETH: show the low-funds warning
+lowFundsWarning: "The faucet is running low! Faucet balance: {1}"
+noFundsError: "Sorry, the faucet is out of funds :("
+rpcConnectionError: "The faucet can't reach Base Sepolia right now (RPC error)"
+
+faucetStats:
+  logfile: "faucet-stats.log"
+buildSeoIndex: true
+buildSeoMeta:
+  keywords: "base sepolia,faucet,base,testnet,eth,pow"
