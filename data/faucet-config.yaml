@@ -17,7 +17,7 @@ faucetPidFile: "faucet-pid.txt"
 serverPort: 8080
 # Number of reverse proxies IN FRONT OF the container (the image's own nginx is accounted for already).
 # Set to 1 if you put Caddy/nginx/Cloudflare in front, or every visitor shares one IP and the IP limits break.
-httpProxyCount: 2   # Render: Cloudflare edge + Render load balancer in front
+httpProxyCount: 3   # Render: Cloudflare edge + 2 Render-internal hops (1 gave 10.x, 2 gave a Cloudflare IP)
 
 faucetTitle: "Base Sepolia PoW Faucet"
 faucetImage: "/images/fauceth_420.jpg"
