@@ -9,12 +9,12 @@ if [ -n "$ALCHEMY_RPC_URL" ]; then
       ethRpcHost:*)
         printf '%s\n' "ethRpcHost:" \
           "  - url: \"$ALCHEMY_RPC_URL\"" '    name: "alchemy"' '    priority: 10' \
-          '  - url: "https://mainnet.base.org"' '    name: "base-public"' '    priority: 5' '    metered: true' ;;
+          '  - url: "https://sepolia.base.org"' '    name: "base-public"' '    priority: 5' '    metered: true' ;;
       *) printf '%s\n' "$line" ;;
     esac
   done < "$CFG" > "$TMP" && cat "$TMP" > "$CFG" && rm -f "$TMP"
-  echo "render-start: Alchemy RPC enabled as primary, mainnet.base.org as backup"
+  echo "render-start: Alchemy RPC enabled as primary, sepolia.base.org as backup"
 else
-  echo "render-start: ALCHEMY_RPC_URL not set, using mainnet.base.org only"
+  echo "render-start: ALCHEMY_RPC_URL not set, using sepolia.base.org only"
 fi
 exec /entrypoint.sh "$@"
