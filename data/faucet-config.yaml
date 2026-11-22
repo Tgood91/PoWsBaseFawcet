@@ -68,9 +68,9 @@ modules:
   # Strongly recommended once you have keys: sign up at https://hcaptcha.com, put the site key here and
   # FAUCET_CAPTCHA_SECRET in .env, then set enabled: true. Off by default so the faucet starts without keys.
   captcha:
-    enabled: false
+    enabled: true
     provider: "hcaptcha"
-    siteKey: "00000000-0000-0000-0000-000000000000"
+    siteKey: "f8bc57ba-446a-4c56-812e-e26c6c220a38"
     checkSessionStart: true
     checkBalanceClaim: false
 
