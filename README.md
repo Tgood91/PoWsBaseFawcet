@@ -104,7 +104,7 @@ At these settings the 4.44M Runes last for roughly 18–44 claims, or about 9 da
 | Mining | argon2, difficulty 11 | memory-hard, so GPUs don't gain much |
 | Bot checks | rewards cut 90% for hosting and proxy IPs | bot farms usually run from data centres |
 | `httpProxyCount` | 3 | Render puts Cloudflare plus two internal hops in front. With 3 the faucet sees each visitor's real IP, so per-IP limits work |
-| RPC | Alchemy (primary), then PublicNode, mainnet.base.org, thirdweb and Pocket Network as backups, ordered by measured latency | the public RPCs are rate-limited or sometimes serve stale blocks |
+| RPC | Alchemy (primary), then PublicNode, mainnet.base.org and Pocket Network as backups, ordered by measured latency | the public RPCs are rate-limited or sometimes serve stale blocks |
 
 ## Deploying (Render)
 
