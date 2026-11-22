@@ -5,3 +5,7 @@ data/*.log
 data/faucet-pid.txt
 data/modules-cache/
 data/passport-cache/
+
+# local Windows run helpers
+windows/cloudflared.exe
+data/*.bak-*

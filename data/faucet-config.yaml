@@ -17,7 +17,7 @@ faucetPidFile: "faucet-pid.txt"
 serverPort: 8080
 # Number of reverse proxies IN FRONT OF the container (the image's own nginx is accounted for already).
 # Set to 1 if you put Caddy/nginx/Cloudflare in front, or every visitor shares one IP and the IP limits break.
-httpProxyCount: 0
+httpProxyCount: 1   # one proxy in front (Render load balancer, or a Cloudflare tunnel)
 
 faucetTitle: "Base Sepolia PoW Faucet"
 faucetImage: "/images/fauceth_420.jpg"
@@ -128,13 +128,13 @@ modules:
 
   pow:
     enabled: true
-    powShareReward: 1000000000000000 # 0.001 ETH per share: 25 shares for the minimum, 250 for the cap. Tune after watching real hashrates
+    powShareReward: 400000000000000  # 0.0004 ETH/share. Difficulty 11 = ~2048 argon2 hashes/share. ~200 H/s browser: min claim ~10 min, max ~100 min; at the 500 H/s cap: ~4 / ~40 min
     verifyMinerMissPenaltyPerc: 10
     verifyMinerRewardPerc: 15
     powSessionTimeout: 18000         # 5h
     powIdleTimeout: 1800             # 30min
-    powHashrateSoftLimit: 1000
-    powHashrateHardLimit: 1100
+    powHashrateSoftLimit: 500    # throttle fast rigs so a full 0.25 claim takes 40+ min
+    powHashrateHardLimit: 550
     powDifficulty: 11
     powHashAlgo: "argon2"
 
