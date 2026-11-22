@@ -133,8 +133,8 @@ modules:
     verifyMinerRewardPerc: 15
     powSessionTimeout: 18000         # 5h
     powIdleTimeout: 1800             # 30min
-    powHashrateSoftLimit: 500    # throttle fast rigs so a full 0.25 claim takes 40+ min
-    powHashrateHardLimit: 550
+    powHashrateSoftLimit: 500    # rule: 500 H/s max per session (client throttles to this)
+    powHashrateHardLimit: 500    # rule: shares above 500 H/s are rejected server-side
     powDifficulty: 11
     powHashAlgo: "argon2"
 
