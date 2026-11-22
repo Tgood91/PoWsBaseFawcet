@@ -39,7 +39,7 @@ faucetHomeHtml: |
 
 # --- chain ---
 ethRpcHost: "https://sepolia.base.org"   # public and rate-limited; use your own RPC (Alchemy, QuickNode, ...) for real traffic
-ethRpcMaxBlockHeightDiff: 120   # Base makes a block every 2s and the metered backup RPC is only polled every 60s, so it always looks ~50 blocks behind; 120 (4 min) keeps it usable as failover
+ethRpcMaxBlockHeightDiff: 600   # ~2 min: Base Sepolia makes a block about every 0.2s, and backups are polled every 10s (metered: 60s)
 ethRpcMonitorInterval: 10
 ethRpcMonitorMeteredInterval: 60
 ethTxBroadcastCount: 2
