@@ -39,7 +39,7 @@ faucetHomeHtml: |
 
 # --- chain ---
 ethRpcHost: "https://mainnet.base.org"   # public, rate-limited backup; on Render, render-start.sh adds Alchemy (ALCHEMY_RPC_URL) as primary
-ethRpcMaxBlockHeightDiff: 30   # 1 min of Base blocks. PublicNode (backup) is polled every 10s and keeps up; the metered mainnet.base.org last-resort may drop out when it lags
+ethRpcMaxBlockHeightDiff: 600   # ~2 min: Base mainnet makes a block about every 0.2s, and backups are polled every 10s (metered: 60s)
 ethRpcMonitorInterval: 10
 ethRpcMonitorMeteredInterval: 60
 ethTxBroadcastCount: 2
